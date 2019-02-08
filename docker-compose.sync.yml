@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  workspace:
+    volumes:
+      - applications-docker-sync:/var/www:nocopy
+  php-fpm:
+    volumes:
+      - applications-docker-sync:/var/www:nocopy
+  apache2:
+    volumes:
+      - applications-docker-sync:/var/www:nocopy
+
+volumes:
+  applications-docker-sync:
+    external: true

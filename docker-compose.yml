@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+  workspace:
+    build:
+      context: ./workspace
+    volumes:
+      - ../:/var/www
+    tty: true
+  php-fpm:
+    build:
+      context: ./php-fpm
+    expose:
+      - 9000
+    volumes:
+      - ./php-fpm/php.ini:/usr/local/etc/php/php.ini
+      - ../:/var/www
+    depends_on:
+      - workspace
+  apache2:
+    image: webdevops/apache:ubuntu-16.04
+    environment:
+      WEB_PHP_SOCKET: php-fpm:9000
+      WEB_DOCUMENT_ROOT: /var/www/
+    volumes:
+      - ../:/var/www
+      - ./apache2/localhost.conf:/etc/apache2/sites-enabled/localhost.conf
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - php-fpm
+  mariadb:
+    build:
+      context: ./mariadb
+    volumes:
+      - mariadb:/var/lib/mysql
+      - ./mariadb/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: default
+      MYSQL_USER: default
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root
+
+volumes:
+  mariadb:
+    driver: local
